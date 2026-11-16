@@ -171,7 +171,7 @@ Build an installable Ubuntu package (needs `sudo apt install binutils fakeroot` 
 ```
 
 The package is written to `desktop/build/compose/binaries/main/deb/`. Install it with
-`sudo apt install ./desktop/build/compose/binaries/main/deb/courtcompanion_0.1.0-1_amd64.deb`; CourtCompanion then
+`sudo apt install ./desktop/build/compose/binaries/main/deb/courtcompanion_0.1.0_amd64.deb`; CourtCompanion then
 appears in the app launcher.
 
 ## Releasing
