@@ -1,7 +1,7 @@
 package com.robert.courtcompanion.model
 
 import kotlinx.serialization.Serializable
-import java.util.UUID
+import kotlin.random.Random
 
 const val MIN_SKILL = 1
 const val MAX_SKILL = 5
@@ -44,7 +44,7 @@ data class Roster(
     }
 }
 
-fun newId(): String = UUID.randomUUID().toString().take(8)
+fun newId(): String = (1..8).map { "0123456789abcdef"[Random.nextInt(16)] }.joinToString("")
 
 @Serializable
 enum class Language { EN, SV }

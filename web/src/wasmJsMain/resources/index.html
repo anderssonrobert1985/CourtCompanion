@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <!-- viewport-fit=cover lets the app draw under the iPhone notch; no zoom, so pinching doesn't break the layout. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+    <title>CourtCompanion</title>
+    <meta name="theme-color" content="#1F3A5F">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="CourtCompanion">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <style>
+        html, body { height: 100%; margin: 0; overflow: hidden; background: #ffffff; }
+        #app {
+            position: fixed;
+            top: env(safe-area-inset-top);
+            bottom: env(safe-area-inset-bottom);
+            left: env(safe-area-inset-left);
+            right: env(safe-area-inset-right);
+        }
+        #message {
+            position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+            padding: 24px; text-align: center; color: #1F3A5F; font: 16px -apple-system, system-ui, sans-serif;
+        }
+    </style>
+</head>
+<body>
+<div id="app"></div>
+<div id="message">Loading…</div>
+<script>
+    // The app needs WebAssembly garbage collection: Safari 18.2 (iOS 18.2) or newer, Chrome/Edge 119, Firefox 120.
+    const supported = (() => {
+        try {
+            // A module that declares one struct type, which only browsers with Wasm GC accept.
+            return WebAssembly.validate(new Uint8Array([0, 97, 115, 109, 1, 0, 0, 0, 1, 5, 1, 95, 1, 127, 0]));
+        } catch (e) {
+            return false;
+        }
+    })();
+    if (supported) {
+        const script = document.createElement('script');
+        script.src = 'courtcompanion.js';
+        document.body.appendChild(script); // Removes the loading text once it runs.
+    } else {
+        document.getElementById('message').textContent =
+            'This browser is too old for CourtCompanion. Update to iOS 18.2 or later, or a current Chrome or Firefox.';
+    }
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+    // Ask the browser not to clear the player list when space runs low.
+    if (navigator.storage && navigator.storage.persist) navigator.storage.persist();
+</script>
+</body>
+</html>

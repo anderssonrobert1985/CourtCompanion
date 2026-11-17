@@ -12,18 +12,16 @@ import java.io.File
 class DesktopPlatform(private val window: Frame?) : Platform {
     override val repository = AppRepository(dataDir())
 
-    override val exportDir = File(xdgDir("XDG_CACHE_HOME", ".cache"), "courtcompanion/exports")
-
-    override fun exportFile(file: File): String? {
+    override fun exportFile(name: String, text: String): String? {
         val dialog = FileDialog(window, "Export players", FileDialog.SAVE).apply {
             directory = (File(home, "Documents").takeIf { it.isDirectory } ?: home).path
-            this.file = file.name
+            file = name
         }
         dialog.isVisible = true // Blocks until closed.
-        val name = dialog.file ?: return null
-        val target = File(dialog.directory, if (name.endsWith(".json", ignoreCase = true)) name else "$name.json")
+        val chosen = dialog.file ?: return null
+        val target = File(dialog.directory, if (chosen.endsWith(".json", ignoreCase = true)) chosen else "$chosen.json")
         return runCatching {
-            file.copyTo(target, overwrite = true)
+            target.writeText(text)
             target.path.replaceFirst(home.path, "~")
         }.getOrElse { "Error: ${it.message}" }
     }

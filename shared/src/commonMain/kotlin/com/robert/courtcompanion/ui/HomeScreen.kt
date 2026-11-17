@@ -287,7 +287,7 @@ private fun KeepApartTodayCard(vm: PracticeViewModel, modifier: Modifier) {
                     InputChip(
                         selected = false,
                         onClick = { vm.removeKeepApartToday(pair) },
-                        label = { Text("$a ↔ $b") },
+                        label = { Text("$a ≠ $b") },
                         trailingIcon = { Icon(Icons.Default.Close, s.delete, Modifier.size(16.dp)) },
                     )
                 }

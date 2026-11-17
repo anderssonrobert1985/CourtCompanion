@@ -13,8 +13,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import java.io.File
-import java.time.LocalDate
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.todayIn
+import kotlin.time.Clock
 
 /** App preferences, kept across practices. */
 @Serializable
@@ -27,7 +29,7 @@ data class AppSettings(
 /** Today's practice: who is missing, one-off keep-apart pairs and the rounds generated so far. Reset every day. */
 @Serializable
 data class PracticeSession(
-    val date: String = LocalDate.now().toString(),
+    val date: String = today().toString(),
     /** Ids of players who are not here. Everyone else in the roster counts as present. */
     val absent: Set<String> = emptySet(),
     /** Keep-apart pairs for today only, on top of the roster's saved ones. */
@@ -36,18 +38,29 @@ data class PracticeSession(
     val rounds: List<List<List<String>>> = emptyList(),
 )
 
-/**
- * Stores the roster, settings and today's session as JSON files in [dir], and publishes them as [StateFlow]s so
- * every screen sees changes at once. Create one instance per directory.
- */
-class AppRepository(private val dir: File, private val today: () -> LocalDate = LocalDate::now) {
-    private val rosterFile = File(dir, "roster.json")
-    private val settingsFile = File(dir, "settings.json")
-    private val sessionFile = File(dir, "session.json")
+/** Today's date in the device's time zone. */
+fun today(): LocalDate = Clock.System.todayIn(TimeZone.currentSystemDefault())
 
-    init {
-        dir.mkdirs()
-    }
+/**
+ * Where [AppRepository] keeps its JSON documents, by name: files in a directory on Android and desktop, the
+ * browser's local storage on the web.
+ */
+interface TextStore {
+    /** The text saved under [name], or null if there is none. */
+    fun read(name: String): String?
+
+    /** Replaces the text saved under [name], as one step: a crash leaves either the old or the new text. */
+    fun write(name: String, text: String)
+}
+
+/**
+ * Stores the roster, settings and today's session as JSON documents in [store], and publishes them as [StateFlow]s
+ * so every screen sees changes at once. Create one instance per store.
+ */
+class AppRepository(private val store: TextStore, private val today: () -> LocalDate = ::today) {
+    private val rosterFile = "roster.json"
+    private val settingsFile = "settings.json"
+    private val sessionFile = "session.json"
 
     private val _roster = MutableStateFlow(read(rosterFile, Roster.serializer())?.let(RosterJson::normalize) ?: Roster())
     val roster: StateFlow<Roster> = _roster.asStateFlow()
@@ -60,23 +73,20 @@ class AppRepository(private val dir: File, private val today: () -> LocalDate = 
     )
     val session: StateFlow<PracticeSession> = _session.asStateFlow()
 
-    @Synchronized
-    fun updateRoster(change: (Roster) -> Roster) {
+    fun updateRoster(change: (Roster) -> Roster): Unit = locked(this) {
         val next = RosterJson.normalize(change(_roster.value))
         write(rosterFile, Roster.serializer(), next)
         _roster.value = next
     }
 
-    @Synchronized
-    fun updateSettings(change: (AppSettings) -> AppSettings) {
+    fun updateSettings(change: (AppSettings) -> AppSettings): Unit = locked(this) {
         val next = change(_settings.value)
         write(settingsFile, AppSettings.serializer(), next)
         _settings.value = next
     }
 
     /** Changes today's session; a session from an earlier day is replaced by a fresh one first. */
-    @Synchronized
-    fun updateSession(change: (PracticeSession) -> PracticeSession) {
+    fun updateSession(change: (PracticeSession) -> PracticeSession): Unit = locked(this) {
         val date = today().toString()
         val current = _session.value.takeIf { it.date == date } ?: PracticeSession(date)
         val next = change(current)
@@ -89,23 +99,17 @@ class AppRepository(private val dir: File, private val today: () -> LocalDate = 
         if (_session.value.date != today().toString()) updateSession { it }
     }
 
-    private fun <T> read(file: File, serializer: KSerializer<T>): T? =
-        runCatching { json.decodeFromString(serializer, file.readText()) }.getOrNull()
+    private fun <T> read(name: String, serializer: KSerializer<T>): T? =
+        runCatching { json.decodeFromString(serializer, store.read(name)!!) }.getOrNull()
 
-    private fun <T> write(file: File, serializer: KSerializer<T>, value: T) {
-        val tmp = File(dir, "${file.name}.tmp")
-        tmp.writeText(json.encodeToString(serializer, value))
-        if (!tmp.renameTo(file)) {
-            file.delete()
-            tmp.renameTo(file)
-        }
-    }
+    private fun <T> write(name: String, serializer: KSerializer<T>, value: T) =
+        store.write(name, json.encodeToString(serializer, value))
 
     companion object {
         internal val json = Json {
-            ignoreUnknownKeys = true
-            encodeDefaults = true
-            prettyPrint = true
+        ignoreUnknownKeys = true
+        encodeDefaults = true
+        prettyPrint = true
         }
     }
 }
@@ -128,26 +132,29 @@ object RosterJson {
     fun normalize(roster: Roster): Roster {
         // Tag names are matched ignoring case; the tag list's spelling wins.
         val tags = (roster.tags + roster.players.flatMap { it.tags })
-            .map { it.trim() }
-            .filter { it.isNotEmpty() }
-            .distinctBy { it.lowercase() }
+        .map { it.trim() }
+        .filter { it.isNotEmpty() }
+        .distinctBy { it.lowercase() }
         val canonical = tags.associateBy { it.lowercase() }
         val seen = HashSet<String>()
         val players = roster.players
-            .filter { it.name.isNotBlank() }
-            .map { p ->
-                val id = p.id.takeIf { it.isNotBlank() && seen.add(it) } ?: newId().also { seen.add(it) }
-                p.copy(
-                    id = id,
-                    name = p.name.trim(),
-                    skill = p.skill.coerceIn(MIN_SKILL, MAX_SKILL),
-                    tags = p.tags.mapNotNull { canonical[it.trim().lowercase()] }.toSet(),
-                )
-            }
+        .filter { it.name.isNotBlank() }
+        .map { p ->
+            val id = p.id.takeIf { it.isNotBlank() && seen.add(it) } ?: newId().also { seen.add(it) }
+            p.copy(
+                id = id,
+                name = p.name.trim(),
+                skill = p.skill.coerceIn(MIN_SKILL, MAX_SKILL),
+                tags = p.tags.mapNotNull { canonical[it.trim().lowercase()] }.toSet(),
+            )
+        }
         val ids = players.map { it.id }.toSet()
         val pairs = roster.keepApart
-            .filter { it.a in ids && it.b in ids && it.a != it.b }
-            .distinctBy { setOf(it.a, it.b) }
+        .filter { it.a in ids && it.b in ids && it.a != it.b }
+        .distinctBy { setOf(it.a, it.b) }
         return roster.copy(players = players, tags = tags, keepApart = pairs)
     }
 }
+
+/** Runs [block] holding [lock]'s monitor on the JVM, where the MCP server may call from several threads. */
+internal expect inline fun <T> locked(lock: Any, block: () -> T): T

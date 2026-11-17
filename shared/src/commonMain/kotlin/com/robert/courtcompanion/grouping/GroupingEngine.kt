@@ -64,7 +64,7 @@ object GroupingEngine {
         val best = candidates.minOf { it.cost }
         val pool = candidates.filter { it.cost <= best + TOLERANCE }.distinctBy { it.key }
         // A new press should give a new division when there is an equally good one.
-        val previous = notLike?.let { round -> problem.keyOf(round) }
+        val previous = notLike?.let { round -> problem.keyOfIds(round) }
         val fresh = pool.filter { it.key != previous }.ifEmpty { pool }
         val chosen = fresh[random.nextInt(fresh.size)]
         return problem.toGrouping(chosen.groups)
@@ -108,8 +108,7 @@ object GroupingEngine {
 
         fun keyOf(groups: List<IntArray>): Set<Set<Int>> = groups.map { it.toSet() }.toSet()
 
-        @JvmName("keyOfIds")
-        fun keyOf(round: List<List<String>>): Set<Set<Int>> = round.map { g -> g.mapNotNull { index[it] }.toSet() }.toSet()
+        fun keyOfIds(round: List<List<String>>): Set<Set<Int>> = round.map { g -> g.mapNotNull { index[it] }.toSet() }.toSet()
 
         fun cost(group: IntArray): Double {
             var c = 0.0
@@ -128,7 +127,7 @@ object GroupingEngine {
                     if (request.considerTypes && size > 1) {
                         var diff = 0
                         for (x in 0 until size) for (y in x + 1 until size) {
-                            diff += java.lang.Long.bitCount(tags[group[x]] xor tags[group[y]])
+                            diff += (tags[group[x]] xor tags[group[y]]).countOneBits()
                         }
                         c += TYPE_WEIGHT * diff / (size - 1)
                     }

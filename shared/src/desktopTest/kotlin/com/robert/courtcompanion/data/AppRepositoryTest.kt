@@ -9,7 +9,9 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
 import java.nio.file.Files
-import java.time.LocalDate
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.plus
 
 class AppRepositoryTest {
     private val dir: File = Files.createTempDirectory("courtcompanion-repo").toFile()
@@ -21,7 +23,7 @@ class AppRepositoryTest {
 
     @Test
     fun rosterAndSessionSurviveARestart() {
-        val day = LocalDate.of(2026, 11, 16)
+        val day = LocalDate(2026, 11, 16)
         val repo = AppRepository(dir) { day }
         repo.updateRoster { it.copy(players = listOf(Player(id = "a", name = "Anna", skill = 4))) }
         repo.updateSession { it.copy(absent = setOf("a")) }
@@ -31,7 +33,7 @@ class AppRepositoryTest {
         assertEquals(setOf("a"), again.session.value.absent)
 
         // The next day starts a fresh session but keeps the roster.
-        val tomorrow = AppRepository(dir) { day.plusDays(1) }
+        val tomorrow = AppRepository(dir) { day.plus(1, DateTimeUnit.DAY) }
         assertEquals(emptySet<String>(), tomorrow.session.value.absent)
         assertEquals(1, tomorrow.roster.value.players.size)
     }
