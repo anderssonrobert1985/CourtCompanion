@@ -202,9 +202,9 @@ The published web app is at **https://anderssonrobert1985.github.io/CourtCompani
 workflow (`.github/workflows/web.yml`) runs the tests and builds the web app for every push and pull request, and
 publishes it there on every push to `main`.
 
-To host it somewhere else instead, upload the folder's contents to any static web host with HTTPS (needed for offline use
-and for adding it to the home screen), for example GitHub Pages, Cloudflare Pages or Netlify (Netlify Drop
-lets you drag the folder into the browser). Don't upload the `.map` file if you'd rather not publish the source
+To host it somewhere else instead, upload the folder's contents to any static web host with HTTPS (needed for
+offline use and for adding it to the home screen), for example Cloudflare Pages or Netlify (Netlify Drop lets you
+drag the folder into the browser). Don't upload the `.map` file if you'd rather not publish the source
 paths. To update, upload a new build; phones pick it up the next time the app is opened with a connection.
 
 On each iPhone:
