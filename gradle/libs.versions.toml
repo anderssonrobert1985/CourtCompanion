@@ -1,13 +1,16 @@
 [versions]
-agp = "8.7.2"
-kotlin = "2.0.21"
+agp = "8.13.2"
+kotlin = "2.4.20"
 coreKtx = "1.13.1"
 activityCompose = "1.9.3"
-serializationJson = "1.7.3"
-coroutines = "1.8.0"
+serializationJson = "1.11.0"
+coroutines = "1.10.2"
 junit = "4.13.2"
-composeMultiplatform = "1.7.1"
-lifecycleMultiplatform = "2.8.4"
+composeMultiplatform = "1.10.3"
+material3 = "1.9.0"
+materialIcons = "1.7.3"
+datetime = "0.7.1"
+lifecycleMultiplatform = "2.10.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -17,7 +20,13 @@ kotlinx-coroutines-swing = { group = "org.jetbrains.kotlinx", name = "kotlinx-co
 kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutines" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 jetbrains-lifecycle-viewmodel-compose = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "lifecycleMultiplatform" }
-jetbrains-compose-material-icons-core = { group = "org.jetbrains.compose.material", name = "material-icons-core", version.ref = "composeMultiplatform" }
+jetbrains-compose-runtime = { group = "org.jetbrains.compose.runtime", name = "runtime", version.ref = "composeMultiplatform" }
+jetbrains-compose-foundation = { group = "org.jetbrains.compose.foundation", name = "foundation", version.ref = "composeMultiplatform" }
+jetbrains-compose-ui = { group = "org.jetbrains.compose.ui", name = "ui", version.ref = "composeMultiplatform" }
+jetbrains-compose-material3 = { group = "org.jetbrains.compose.material3", name = "material3", version.ref = "material3" }
+jetbrains-compose-desktop = { group = "org.jetbrains.compose.desktop", name = "desktop", version.ref = "composeMultiplatform" }
+jetbrains-compose-material-icons-core = { group = "org.jetbrains.compose.material", name = "material-icons-core", version.ref = "materialIcons" }
+kotlinx-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version.ref = "datetime" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

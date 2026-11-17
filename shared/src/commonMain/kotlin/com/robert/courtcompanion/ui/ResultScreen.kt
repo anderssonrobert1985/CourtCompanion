@@ -120,7 +120,7 @@ private fun GroupCard(title: String, color: Color, players: List<Player>) {
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(title, color = Color.White, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
-            Text(s.average("%.1f".format(players.averageSkill())), color = Color.White, style = MaterialTheme.typography.bodySmall)
+            Text(s.average(players.averageSkill()), color = Color.White, style = MaterialTheme.typography.bodySmall)
         }
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             for (p in players) {
@@ -142,10 +142,10 @@ private fun GroupCard(title: String, color: Color, players: List<Player>) {
                     SkillDots(p.skill, color = color, dot = 6.dp)
                 }
             }
-            val tagCounts = players.flatMap { it.tags }.groupingBy { it }.eachCount().toSortedMap()
+            val tagCounts = players.flatMap { it.tags }.groupingBy { it }.eachCount().entries.sortedBy { it.key }
             if (tagCounts.isNotEmpty()) {
                 Text(
-                    tagCounts.entries.joinToString("  ") { (tag, n) -> "$tag $n" },
+                    tagCounts.joinToString("  ") { (tag, n) -> "$tag $n" },
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

@@ -35,7 +35,6 @@ import com.robert.courtcompanion.LocalPlatform
 import com.robert.courtcompanion.data.RosterJson
 import com.robert.courtcompanion.model.Language
 import com.robert.courtcompanion.model.Roster
-import java.io.File
 
 /** Language, export/import of the player file, and today's practice. */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -83,10 +82,8 @@ fun SettingsScreen(practice: PracticeViewModel, onBack: () -> Unit) {
                 Text(s.dataHelp, style = MaterialTheme.typography.bodyMedium)
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     Button(onClick = {
-                        val file = File(platform.exportDir, "courtcompanion-players.json")
-                        file.parentFile.mkdirs()
-                        file.writeText(RosterJson.write(repository.roster.value))
-                        message = platform.exportFile(file)?.let(s::exported)
+                        val text = RosterJson.write(repository.roster.value)
+                        message = platform.exportFile("courtcompanion-players.json", text)?.let(s::exported)
                     }) { Text(s.export) }
                     OutlinedButton(onClick = pickFile) { Text(s.import) }
                 }

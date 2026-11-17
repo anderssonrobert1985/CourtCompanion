@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.util.Properties
 
 plugins {
@@ -15,7 +16,7 @@ val keystoreProperties = Properties().apply {
 
 android {
     namespace = "com.robert.courtcompanion"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.robert.courtcompanion"
@@ -53,13 +54,13 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = "17"
-    }
-
     buildFeatures {
         compose = true
     }
+}
+
+kotlin {
+    compilerOptions { jvmTarget.set(JvmTarget.JVM_17) }
 }
 
 dependencies {

@@ -13,7 +13,9 @@ pluginManagement {
 }
 
 dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    // Not FAIL_ON_PROJECT_REPOS: the Kotlin plugin adds its own repositories to download Node.js and Binaryen for
+    // the web build.
+    repositoriesMode.set(RepositoriesMode.PREFER_PROJECT)
     repositories {
         google()
         mavenCentral()
@@ -21,4 +23,4 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "CourtCompanion"
-include(":shared", ":app", ":desktop", ":cli")
+include(":shared", ":app", ":desktop", ":cli", ":web")

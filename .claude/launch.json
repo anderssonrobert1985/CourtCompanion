@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "web",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "8085", "--directory", "web/build/dist/wasmJs/productionExecutable"],
+      "port": 8085
+    }
+  ]
+}

@@ -12,17 +12,31 @@ plugins {
 kotlin {
     androidTarget()
     jvm("desktop")
+    @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
+    wasmJs { browser() }
+
+    // Android and desktop both run on the JVM and share jvmCommonMain (file storage).
+    @OptIn(org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi::class)
+    applyDefaultHierarchyTemplate {
+        common {
+            group("jvmCommon") {
+                withAndroidTarget()
+                withJvm()
+            }
+        }
+    }
 
     sourceSets {
         commonMain.dependencies {
-            implementation(compose.runtime)
-            implementation(compose.foundation)
-            implementation(compose.material3)
-            implementation(compose.ui)
+            implementation(libs.jetbrains.compose.runtime)
+            implementation(libs.jetbrains.compose.foundation)
+            implementation(libs.jetbrains.compose.material3)
+            implementation(libs.jetbrains.compose.ui)
             implementation(libs.jetbrains.compose.material.icons.core)
             implementation(libs.jetbrains.lifecycle.viewmodel.compose)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.kotlinx.datetime)
         }
         androidMain.dependencies {
             implementation(libs.androidx.core.ktx)
@@ -30,7 +44,7 @@ kotlin {
         }
         val desktopMain by getting {
             dependencies {
-                implementation(compose.desktop.common)
+                implementation(libs.jetbrains.compose.desktop)
             }
         }
         val desktopTest by getting {
@@ -51,7 +65,7 @@ tasks.withType<KotlinJvmCompile>().configureEach {
 
 android {
     namespace = "com.robert.courtcompanion.shared"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         minSdk = 29

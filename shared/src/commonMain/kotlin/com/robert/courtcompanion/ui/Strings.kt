@@ -31,7 +31,7 @@ open class Strings {
     open fun groupCount(n: Int) = if (n == 1) "group" else "groups"
     open val smallerGroup = "One smaller group"
     open val biggerGroups = "Bigger groups"
-    open fun sizesPreview(players: Int, sizes: String) = "$players players → $sizes"
+    open fun sizesPreview(players: Int, sizes: String) = "$players players: $sizes"
     open val goal = "Goal"
     open fun goalName(goal: Goal) = when (goal) {
         Goal.SIMILAR -> "Similar level"
@@ -63,7 +63,7 @@ open class Strings {
     open fun round(n: Int) = "Round $n"
     open fun groupName(n: Int) = "Group $n"
     open fun teamName(n: Int) = "Team $n"
-    open fun average(avg: String) = "avg $avg"
+    open fun average(avg: Double) = "avg ${oneDecimal(avg, '.')}"
     open val reroll = "Re-roll"
     open val nextRound = "Next round"
     open val newRequest = "Change"
@@ -140,7 +140,7 @@ object Swedish : Strings() {
     override fun groupCount(n: Int) = if (n == 1) "grupp" else "grupper"
     override val smallerGroup = "En mindre grupp"
     override val biggerGroups = "Större grupper"
-    override fun sizesPreview(players: Int, sizes: String) = "$players spelare → $sizes"
+    override fun sizesPreview(players: Int, sizes: String) = "$players spelare: $sizes"
     override val goal = "Mål"
     override fun goalName(goal: Goal) = when (goal) {
         Goal.SIMILAR -> "Lika nivå"
@@ -171,7 +171,7 @@ object Swedish : Strings() {
     override fun round(n: Int) = "Omgång $n"
     override fun groupName(n: Int) = "Grupp $n"
     override fun teamName(n: Int) = "Lag $n"
-    override fun average(avg: String) = "snitt $avg"
+    override fun average(avg: Double) = "snitt ${oneDecimal(avg, ',')}"
     override val reroll = "Slumpa om"
     override val nextRound = "Nästa omgång"
     override val newRequest = "Ändra"
@@ -210,3 +210,11 @@ object Swedish : Strings() {
 }
 
 val LocalStrings = staticCompositionLocalOf<Strings> { English }
+
+/** [x] rounded to one decimal, e.g. 3.25 → "3.3" (or "3,3" with a comma [separator]). */
+internal fun oneDecimal(x: Double, separator: Char): String {
+    val tenths = kotlin.math.round(x * 10).toLong()
+    val sign = if (tenths < 0) "-" else ""
+    val abs = kotlin.math.abs(tenths)
+    return "$sign${abs / 10}$separator${abs % 10}"
+}

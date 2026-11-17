@@ -12,9 +12,12 @@ class AndroidPlatform(private val context: Context) : Platform {
     override val repository: AppRepository = repository(context)
 
     // Must match the cache-path in the app's res/xml/file_paths.xml, which FileProvider shares from.
-    override val exportDir = File(context.cacheDir, "exports")
+    private val exportDir = File(context.cacheDir, "exports")
 
-    override fun exportFile(file: File): String? {
+    override fun exportFile(name: String, text: String): String? {
+        val file = File(exportDir, name)
+        exportDir.mkdirs()
+        file.writeText(text)
         val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
         val send = Intent(Intent.ACTION_SEND).apply {
             type = "application/json"

@@ -155,7 +155,7 @@ fun PlayersScreen(repository: AppRepository, onBack: () -> Unit) {
                                 InputChip(
                                     selected = false,
                                     onClick = { edit { RosterEdits.removeKeepApart(it, pair) } },
-                                    label = { Text("$a ↔ $b") },
+                                    label = { Text("$a ≠ $b") },
                                     trailingIcon = { Icon(Icons.Default.Close, s.delete, Modifier.size(16.dp)) },
                                 )
                             }
